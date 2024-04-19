@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, TextInput, Image } from 'react-native';
+import { View, Text, StyleSheet, TextInput, Image, Alert } from 'react-native';
 import { useState } from 'react';
 import Button from '@/components/Button';
 import { defaultPizzaImage } from '@/components/ProductListItem';
@@ -11,7 +11,6 @@ const CreateProductScreen = () => {
     const [price, setPrice] = useState('');
     const [errors, setErrors] = useState('');
     const [image, setImage] = useState<string | null>(null)
-
     const { id } = useLocalSearchParams();
     const isUpdating = !!id;
 
@@ -62,7 +61,6 @@ const CreateProductScreen = () => {
     }
 
     const pickImage = async () => {
-        // No permissions request is necessary for launching the image library
         let result = await ImagePicker.launchImageLibraryAsync({
           mediaTypes: ImagePicker.MediaTypeOptions.Images,
           allowsEditing: true,
@@ -77,23 +75,41 @@ const CreateProductScreen = () => {
         }
     };
 
-  return (
-    <View style={styles.container}>
-        <Stack.Screen options={{ title: isUpdating ? 'Update Dish' : 'Create Dish' }} />
+    const onDelete = () => {
 
-        <Image source={{ uri: image || defaultPizzaImage }} style={styles.image} />
-        <Text onPress={pickImage} style={styles.textButton}>Select Image</Text>
+    }
 
-        <Text style={styles.label}>Name</Text>
-        <TextInput placeholder="Name" style={styles.input} value={name} onChangeText={setName} />
+    const confirmDelete = () => {
+        Alert.alert("Confirm", "Are you sure you want to delete this dish?", [
+            {
+                text: 'Cancel'
+            },
+            {
+                text: 'Delete',
+                style: 'destructive',
+                onPress: onDelete
+            }
+        ])
+    }
 
-        <Text style={styles.label}>Price ($)</Text>
-        <TextInput keyboardType='numeric' placeholder="9.99" style={styles.input} value={price} onChangeText={setPrice} />
+    return (
+        <View style={styles.container}>
+            <Stack.Screen options={{ title: isUpdating ? 'Update Dish' : 'Create Dish' }} />
 
-        <Text style={{color: 'red'}}>{errors}</Text>
-        <Button onPress={onSubmit} text={isUpdating ? 'Update' : 'Create'} />
-    </View>
-  )
+            <Image source={{ uri: image || defaultPizzaImage }} style={styles.image} />
+            <Text onPress={pickImage} style={styles.textButton}>Select Image</Text>
+
+            <Text style={styles.label}>Name</Text>
+            <TextInput placeholder="Name" style={styles.input} value={name} onChangeText={setName} />
+
+            <Text style={styles.label}>Price ($)</Text>
+            <TextInput keyboardType='numeric' placeholder="9.99" style={styles.input} value={price} onChangeText={setPrice} />
+
+            <Text style={{color: 'red'}}>{errors}</Text>
+            <Button onPress={onSubmit} text={isUpdating ? 'Update' : 'Create'} />
+            {isUpdating && <Text onPress={confirmDelete} style={styles.textButton}>Delete</Text>}
+        </View>
+    )
 }
 
 const styles = StyleSheet.create({
