@@ -4,13 +4,16 @@ import Button from '@/components/Button';
 import { defaultPizzaImage } from '@/components/ProductListItem';
 import Colors from '@/constants/Colors';
 import * as ImagePicker from 'expo-image-picker';
-import { Stack } from 'expo-router';
+import { Stack, useLocalSearchParams } from 'expo-router';
 
 const CreateProductScreen = () => {
     const [name, setName] = useState('');
     const [price, setPrice] = useState('');
     const [errors, setErrors] = useState('');
     const [image, setImage] = useState<string | null>(null)
+
+    const { id } = useLocalSearchParams();
+    const isUpdating = !!id;
 
     const resetFields = () => {
         setName('')
@@ -42,6 +45,22 @@ const CreateProductScreen = () => {
         resetFields()
     }
 
+    const onUpdate= () => {
+        if (!validateInput()) {
+            return;
+        }
+
+        resetFields()
+    }
+
+    const onSubmit = () => {
+        if (isUpdating) {
+            onUpdate()
+        } else {
+            onCreate()
+        }
+    }
+
     const pickImage = async () => {
         // No permissions request is necessary for launching the image library
         let result = await ImagePicker.launchImageLibraryAsync({
@@ -60,7 +79,7 @@ const CreateProductScreen = () => {
 
   return (
     <View style={styles.container}>
-        <Stack.Screen options={{ title: 'Create Dish' }} />
+        <Stack.Screen options={{ title: isUpdating ? 'Update Dish' : 'Create Dish' }} />
 
         <Image source={{ uri: image || defaultPizzaImage }} style={styles.image} />
         <Text onPress={pickImage} style={styles.textButton}>Select Image</Text>
@@ -72,7 +91,7 @@ const CreateProductScreen = () => {
         <TextInput keyboardType='numeric' placeholder="9.99" style={styles.input} value={price} onChangeText={setPrice} />
 
         <Text style={{color: 'red'}}>{errors}</Text>
-        <Button onPress={onCreate} text='Create' />
+        <Button onPress={onSubmit} text={isUpdating ? 'Update' : 'Create'} />
     </View>
   )
 }
